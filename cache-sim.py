@@ -1,32 +1,22 @@
 import numpy as np
 import argparse
-from opt import opt
 from timeit import default_timer as timer
 from datetime import timedelta
 
-
+from opt import opt
+from hint import popToHint, hint
 
 parser = argparse.ArgumentParser(description='Start the Alias gui.')
 parser.add_argument('tracefile', metavar='N', type=str,
 					help='Textfile containing the trace from Dynamorio.')
 args = parser.parse_args()
 
+progBar = True
+
 #Cache Definitions
 linesize =64 #Bit One instr per line assumed.
 associativity = 4 
 sets = 256 
-
-#generate a dictionary for the cache
-cache = {}
-for x in range(sets):
-	cache[x] = np.array(np.zeros(associativity))
-
-#generate a dictionary for the cache distances
-cacheDist = {}
-for x in range(sets):
-	cacheDist[x] = np.array(np.zeros(associativity))
-	for y in range(associativity):
-		cacheDist[x][y] = -1
 
 def parseTrace(filename=args.tracefile):
 	'''
@@ -89,7 +79,16 @@ def parseTrace(filename=args.tracefile):
 
 #Test.txt returns Hits: 18, Misses: 61
 iTrace = parseTrace()
-hits, misses, popTrace = opt(iTrace, cache, cacheDist)
+hits, misses, popTrace = opt(iTrace, sets, associativity, progBar)
 #print(popTrace)
-print("Hits: ", hits, ", Misses: ", misses, "PopTraceLen: ", len(popTrace), ", TraceLen: ", len(iTrace))
+hints = popToHint(popTrace, iTrace)
+#print()
+
+assert len(popTrace) == len(hints) == len(iTrace), "Schould always be True!"
+
+hhits, hmisses = hint(iTrace, hints, sets, associativity, progBar)
+print("OPT:")
+print("Hits: ", hits, ", Misses: ", misses)
+print("HINT:")
+print("Hits: ", hhits, "Misses: ", hmisses)
 #print(distanceTraceBrute(parseTrace()))

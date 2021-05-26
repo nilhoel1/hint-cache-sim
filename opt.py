@@ -1,7 +1,18 @@
 import numpy as np
 from progressBar import printProgressBar
 
-progBar = True
+def initCache(sets, associativity):
+	#generate a dictionary for the cache
+	cache = {}
+	for x in range(sets):
+		cache[x] = np.array(np.zeros(associativity))
+	#generate a dictionary for the cache distances
+	cacheDist = {}
+	for x in range(sets):
+		cacheDist[x] = np.array(np.zeros(associativity))
+		for y in range(associativity):
+			cacheDist[x][y] = -1
+	return cache, cacheDist
 
 def distanceTraceStack(iTrace):
 	print("Start distance Trace")
@@ -61,10 +72,11 @@ def updateDistances(cacheDist):
 				cacheDist[x][y] -= 1
 				assert (cacheDist[x][y] > -2),"This should not be possible!"
 
-def opt(iTrace, cache, cacheDist):
+def opt(iTrace, sets, associativity, progBar):
 	popTrace = []
 	hits = 0
 	misses = 0
+	cache, cacheDist = initCache(sets, associativity)
 	for x in range(len(iTrace)):
 		updateDistances(cacheDist)
 		if progBar:
