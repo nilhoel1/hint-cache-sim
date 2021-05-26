@@ -1,7 +1,6 @@
 import numpy as np
 import argparse
-from timeit import default_timer as timer
-from datetime import timedelta
+import gzip
 
 from opt import opt
 from hint import popToHint, hint
@@ -37,9 +36,8 @@ def parseTrace(filename=args.tracefile):
 		0x1a footer
 		type_is_instr: 0xa-0x10 + 0x1e
 	'''
-	start = timer()
 
-	array_from_file = np.genfromtxt(filename, dtype=str)
+	array_from_file = np.genfromtxt(gzip.open(filename), dtype=str)
 
 	#Get all instruction adresses.
 	row_a, col = np.where(array_from_file == '0x000a')
@@ -70,11 +68,6 @@ def parseTrace(filename=args.tracefile):
 	row_d = None
 	row_e = None
 
-
-	end = timer()
-	n = timedelta(seconds=end-start)
-	est = n * len(iTrace)/2
-	#print(est, "n: ", n)
 	return np.array(iTrace)
 
 #Test.txt returns Hits: 18, Misses: 61
