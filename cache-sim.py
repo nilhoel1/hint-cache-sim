@@ -4,18 +4,19 @@ import gzip
 
 from opt import opt
 from hint import popToHint, hint
+from lru import lru
 
 parser = argparse.ArgumentParser(description='Start the Alias gui.')
 parser.add_argument('tracefile', metavar='N', type=str,
 					help='Textfile containing the trace from Dynamorio.')
 args = parser.parse_args()
 
-progBar = True
+progBar = False
 
 #Cache Definitions
 linesize =64 #Bit One instr per line assumed.
-associativity = 4 
-sets = 256 
+associativity = 4
+sets = 2#256 
 
 def parseTrace(filename=args.tracefile):
 	'''
@@ -70,18 +71,31 @@ def parseTrace(filename=args.tracefile):
 
 	return np.array(iTrace)
 
+
 #Test.txt returns Hits: 18, Misses: 61
 iTrace = parseTrace()
-hits, misses, popTrace = opt(iTrace, sets, associativity, progBar)
+hits, misses, popTrace, opt_hits = opt(iTrace, sets, associativity, progBar)
 #print(popTrace)
 hints = popToHint(popTrace, iTrace)
 #print()
 
-assert len(popTrace) == len(hints) == len(iTrace), "Schould always be True!"
+assert len(popTrace) == len(hints) == len(iTrace), "Should always be True!"
 
-hhits, hmisses = hint(iTrace, hints, sets, associativity, progBar)
-print("OPT:")
-print("Hits: ", hits, ", Misses: ", misses)
-print("HINT:")
-print("Hits: ", hhits, "Misses: ", hmisses)
+hhits, hmisses, hint_hits = hint(iTrace, hints, sets, associativity, progBar)
+
+lhits, lmisses = lru(iTrace, sets, associativity, progBar)
+
+diffs = 0
+for x in range(len(opt_hits)):
+	if opt_hits[x] != hint_hits[x]:
+		print("Diff at:", x, ", Position in %:", (x/len(opt_hits))*100)
+		diffs += 1
+print("Sets:", sets, ", Associativity:", associativity, ", Trace:", args.tracefile)
+print("Number of Errors:", diffs, ", Errors in %:", (diffs/len(opt_hits))*100)
+print("OPT-L1:")
+print("Hits:", hits, ", Misses:", misses)
+print("HINT-L1:")
+print("Hits:", hhits, "Misses:", hmisses)
+print("LRU-L1:")
+print("Hits:", lhits, "Misses:", lmisses)
 #print(distanceTraceBrute(parseTrace()))

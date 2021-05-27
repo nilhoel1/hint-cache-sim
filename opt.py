@@ -5,14 +5,20 @@ def initCache(sets, associativity):
 	#generate a dictionary for the cache
 	cache = {}
 	for x in range(sets):
-		cache[x] = np.array(np.zeros(associativity))
+		cache[x] = np.array(np.zeros(associativity, dtype=int))
 	#generate a dictionary for the cache distances
 	cacheDist = {}
 	for x in range(sets):
-		cacheDist[x] = np.array(np.zeros(associativity))
+		cacheDist[x] = np.array(np.zeros(associativity, dtype=int))
 		for y in range(associativity):
 			cacheDist[x][y] = -1
 	return cache, cacheDist
+
+def isHit(cacheSet, addr):
+	for x in range(cacheSet.size):
+		if cacheSet[x] == addr:
+			return x
+	return -1
 
 def distanceTraceStack(iTrace):
 	print("Start distance Trace")
@@ -38,7 +44,7 @@ def distanceTraceStack(iTrace):
 #returns forward distance, -1 is infinity
 def forwardDistance(iTrace, start, addr):
 	distance = 1
-	for x in range(start+1, len(iTrace)):
+	for x in range(start+1, len(iTrace),1):
 		if iTrace[x] != addr:
 			distance += 1
 		else:
@@ -74,6 +80,7 @@ def updateDistances(cacheDist):
 
 def opt(iTrace, sets, associativity, progBar):
 	popTrace = []
+	opt_hits = []
 	hits = 0
 	misses = 0
 	cache, cacheDist = initCache(sets, associativity)
@@ -81,25 +88,32 @@ def opt(iTrace, sets, associativity, progBar):
 		updateDistances(cacheDist)
 		if progBar:
 			printProgressBar(x, len(iTrace)-1, prefix = 'OPT-Sim:', suffix = 'Complete', length = 50)
+#		if 75 >= x >= 72:
+#			print("Hi")
 		#Check the Set
-		cacheSetNr = iTrace[x] % len(cache)
+		addr = iTrace[x]
+		cacheSetNr = addr % len(cache)
 		cacheSet = cache[cacheSetNr]
 		#check for hit
-		hit = np.where(cacheSet == iTrace[x])
-		if hit[0].size == 0: 
+		hit = isHit(cacheSet, addr)
+#		if 75 >= x >= 72:
+#			print("OptSet:", cacheSet ,", Pos:", x, ", Addr:", addr, ", Set Nr.:", cacheSetNr, ", Hit:", hit)
+		if hit == -1: 
 			#Miss
 			misses += 1
+			opt_hits.append(0)
 			#CacheSet is full, compute highest distance.
 			ind = highestForwardDistance(cacheDist, cacheSetNr)
-			popTrace.append(cacheSet[ind])
-			cacheSet[ind] = iTrace[x]
-			cacheDist[cacheSetNr][ind] = forwardDistance(iTrace, x, iTrace[x])
+			popTrace.append(cacheSet[ind])#TODO This mighnt not get added at all.
+			cacheSet[ind] = addr
+			cacheDist[cacheSetNr][ind] = forwardDistance(iTrace, x, addr)
 		else:
 			#Hit
 			hits += 1
+			opt_hits.append(1)
 			popTrace.append(-1)
 			#Update Distance for hitted entry
-			cacheDist[cacheSetNr][hit[0]] = forwardDistance(iTrace, x, iTrace[x])
+			cacheDist[cacheSetNr][hit] = forwardDistance(iTrace, x, addr)
 	if progBar:
 		print()
-	return hits, misses, popTrace
+	return hits, misses, popTrace, opt_hits

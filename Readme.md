@@ -9,6 +9,12 @@ After that run drcachesim on the file with:
 
 And packed in a Human Readable format with:
 ```zcat drmemtrace.tool.drcacheoff.burst_malloc.211917.2237.dir/trace/drmemtrace.tool.drcacheoff.burst_malloc.211917.8542.trace.gz  | od -A x -t x2 -w12 | awk '{printf "0x%s 0x%s 0x%s 0x%s%s%s%s\n", $1, $2, $3, $7, $6, $5, $4}' >> trace.txt```
+
+It is recommended to pack the traces (They are very big):
+``` gzip trace.txt```
 ## How to use the tool
 Currently only the trace can be given as an argument.
-```python cache-sim.py <traceFile>```
+```python cache-sim.py <traceFile.txt.gz>```
+
+## Current Status of the tool 
+At the moment cache lines are ignored, or at least line size = adress size is assumed.
