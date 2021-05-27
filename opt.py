@@ -44,7 +44,7 @@ def distanceTraceStack(iTrace):
 #returns forward distance, -1 is infinity
 def forwardDistance(iTrace, start, addr):
 	distance = 1
-	for x in range(start+1, len(iTrace),1):
+	for x in range(start+1, len(iTrace), 1):
 		if iTrace[x] != addr:
 			distance += 1
 		else:
@@ -104,9 +104,14 @@ def opt(iTrace, sets, associativity, progBar):
 			opt_hits.append(0)
 			#CacheSet is full, compute highest distance.
 			ind = highestForwardDistance(cacheDist, cacheSetNr)
-			popTrace.append(cacheSet[ind])#TODO This mighnt not get added at all.
-			cacheSet[ind] = addr
-			cacheDist[cacheSetNr][ind] = forwardDistance(iTrace, x, addr)
+			fdInd = cacheDist[cacheSetNr][ind] #Forward distance of object with highest distance
+			fdAddr = forwardDistance(iTrace, x, addr)
+			if fdAddr < fdInd or fdInd == -1: #fd of add is smaller than fd of object in cache
+				popTrace.append(cacheSet[ind])
+				cacheSet[ind] = addr
+				cacheDist[cacheSetNr][ind] = fdAddr
+			else:
+				popTrace.append(addr)
 		else:
 			#Hit
 			hits += 1

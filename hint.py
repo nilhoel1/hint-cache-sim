@@ -33,7 +33,7 @@ def popToHint(popTrace, iTrace):
 			#Sth was popped at x -> add popped element to dict
 			toHint.append(popTrace[x])
 	assert len(iTrace) == len(hints), "Hints calculated wrong!"
-	assert len(toHint) == 0, "All hints should be given!"
+	#assert len(toHint) == 0, "All hints should be given!"
 	hints.reverse()
 	return(hints)
 
