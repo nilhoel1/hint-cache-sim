@@ -9,14 +9,18 @@ from lru import lru
 parser = argparse.ArgumentParser(description='Start the Alias gui.')
 parser.add_argument('tracefile', metavar='N', type=str,
 					help='Textfile containing the trace from Dynamorio.')
+parser.add_argument('associativity', metavar='a', type=int,
+					help='Specify cache Associativity.')
+parser.add_argument('sets', metavar='s', type=int,
+					help='Specify cache Sets.')
 args = parser.parse_args()
 
-progBar = False
-
+progBar = True
+printErrors = False
 #Cache Definitions
-linesize =64 #Bit One instr per line assumed.
-associativity = 4
-sets = 2#256 
+#linesize =64 #Currently not Implemented, One instr per line assumed.
+associativity = args.associativity
+sets = args.sets
 
 def parseTrace(filename=args.tracefile):
 	'''
@@ -74,26 +78,39 @@ def parseTrace(filename=args.tracefile):
 
 #Test.txt returns Hits: 18, Misses: 61
 iTrace = parseTrace()
-hits, misses, popTrace, opt_hits = opt(iTrace, sets, associativity, progBar)
+ohits, omisses, popTrace, opt_hits, opt_cache_trace = opt(iTrace, sets, associativity, progBar)
 #print(popTrace)
 hints = popToHint(popTrace, iTrace)
 #print()
 
 assert len(popTrace) == len(hints) == len(iTrace), "Should always be True!"
 
-hhits, hmisses, hint_hits = hint(iTrace, hints, sets, associativity, progBar)
+hhits, hmisses, hint_hits, hint_cache_trace = hint(iTrace, hints, sets, associativity, progBar)
 
 lhits, lmisses = lru(iTrace, sets, associativity, progBar)
 
 diffs = 0
+annomalies = []
 for x in range(len(opt_hits)):
 	if opt_hits[x] != hint_hits[x]:
-		print("Diff at:", x, ", Position in %:", (x/len(opt_hits))*100)
+		print("Diff at:", x, ", Position in %:", round((x/len(opt_hits))*100, 2))
 		diffs += 1
+		annomalies.append(x)
+		if printErrors:
+			print("Addr:", iTrace[x], "@:", x)
+			print("H-Cache", hint_cache_trace[x], "@", x-1, "Hit:", hint_hits[x-1])
+			print("H-Cache", hint_cache_trace[x], "@", x, "Hit:", hint_hits[x])
+			print("H-Cache", hint_cache_trace[x], "@", x+1, "Hit:", hint_hits[x+1])
+			print("__________________________________________________________________")
+			print("O-Cache", opt_cache_trace[x], "@", x-1, "Hit:", opt_hits[x-1], "Pop:", popTrace[x-1])
+			print("O-Cache", opt_cache_trace[x], "@", x, "Hit:", opt_hits[x], "Pop:", popTrace[x])
+			print("O-Cache", opt_cache_trace[x], "@", x+1, "Hit:", opt_hits[x+1], "Pop:", popTrace[x+1])
+
+
+print("Number of Errors:", diffs, ", Errors in %:", round((diffs/len(opt_hits))*100,4), ", Hit diff", abs(hhits-ohits))
 print("Sets:", sets, ", Associativity:", associativity, ", Trace:", args.tracefile)
-print("Number of Errors:", diffs, ", Errors in %:", (diffs/len(opt_hits))*100)
 print("OPT-L1:")
-print("Hits:", hits, ", Misses:", misses)
+print("Hits:", ohits, ", Misses:", omisses)
 print("HINT-L1:")
 print("Hits:", hhits, "Misses:", hmisses)
 print("LRU-L1:")
