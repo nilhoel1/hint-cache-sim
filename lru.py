@@ -36,21 +36,19 @@ def lru(iTrace, sets, associativity, progBar):
 	misses = 0
 	for x in range(len(iTrace)):
 		if progBar:
-			printProgressBar(x, len(iTrace)-1, prefix = 'Hint-Sim:', suffix = 'Complete', length = 50)
+			printProgressBar(x, len(iTrace)-1, prefix = 'LRU-Sim:', suffix = 'Complete', length = 50)
 		#Check the Set
-		addr = iTrace[x]
-		cacheSetNr = addr % len(cache)
-		cacheSet = cache[cacheSetNr]
+		cacheSetNr = iTrace[x] % len(cache)
 		#check for hit
-		hit = isHit(cacheSet, addr)
+		hit = isHit(cache[cacheSetNr], iTrace[x])
 		if hit == -1: 
 			#Miss
 			misses +=1
-			cacheLRUMissUpdate(addr, cacheSet)
+			cacheLRUMissUpdate(iTrace[x], cache[cacheSetNr])
 		else:
 			#Hit
 			hits +=1
-			cacheLRUHitUpdate(addr, cacheSet)
+			cacheLRUHitUpdate(iTrace[x], cache[cacheSetNr])
 	if progBar:
 		print()
 	return hits, misses
