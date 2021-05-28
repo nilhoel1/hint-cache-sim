@@ -100,7 +100,7 @@ def integrityCheck(cacheDist, cacheSetNr, pos, iTrace, cache, pop):
 def opt(iTrace, sets, associativity, progBar):
 	popTrace = []
 	opt_hits = []
-	opt_cache_trace = []
+	#opt_cache_trace = []
 	hits = 0
 	misses = 0
 	cache, cacheDist = initCache(sets, associativity)
@@ -109,7 +109,7 @@ def opt(iTrace, sets, associativity, progBar):
 		if progBar:
 			printProgressBar(x, len(iTrace)-1, prefix = 'OPT-Sim:', suffix = 'Complete', length = 50)
 		cacheSetNr = iTrace[x] % len(cache)
-		opt_cache_trace.append(cache[0].copy())
+		#opt_cache_trace.append(cache[0].copy())
 		#check for hit
 		hit = isHit(cache[cacheSetNr], iTrace[x])
 		if hit == -1: 
@@ -141,4 +141,4 @@ def opt(iTrace, sets, associativity, progBar):
 			integrityCheck(cacheDist, cacheSetNr, x, iTrace, cache, popTrace[x])
 	if progBar:
 		print()
-	return hits, misses, popTrace, opt_hits, opt_cache_trace
+	return hits, misses, popTrace, opt_hits#, opt_cache_trace

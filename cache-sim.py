@@ -82,13 +82,13 @@ def parseITrace(filename=args.tracefile):
 iTrace = parseITrace()
 
 #RunOpt
-ohits, omisses, popTrace, opt_hits, opt_cache_trace = opt(iTrace, sets, associativity, progBar)
+ohits, omisses, popTrace, opt_hits = opt(iTrace, sets, associativity, progBar)
 #Generate Hints for hint policy
 hints = popToHint(popTrace, iTrace)
 #all Traces hould be of the same length
 assert len(popTrace) == len(hints) == len(iTrace), "Should always be True!"
 #Run Hint 
-hhits, hmisses, hint_hits, hint_cache_trace = hint(iTrace, hints, sets, associativity, progBar)
+hhits, hmisses, hint_hits = hint(iTrace, hints, sets, associativity, progBar)
 #Run LRU
 lhits, lmisses = lru(iTrace, sets, associativity, progBar)
 
@@ -101,15 +101,6 @@ if printErrors:
 			print("Diff at:", x, ", Position in %:", round((x/len(opt_hits))*100, 2))
 			diffs += 1
 			annomalies.append(x)
-			print("Addr:", iTrace[x], "@:", x)
-			print("H-Cache", hint_cache_trace[x], "@", x-1, "Hit:", hint_hits[x-1])
-			print("H-Cache", hint_cache_trace[x], "@", x, "Hit:", hint_hits[x])
-			print("H-Cache", hint_cache_trace[x], "@", x+1, "Hit:", hint_hits[x+1])
-			print("------------------------------------------------------------")
-			print("O-Cache", opt_cache_trace[x], "@", x-1, "Hit:", opt_hits[x-1], "Pop:", popTrace[x-1])
-		print("O-Cache", opt_cache_trace[x], "@", x, "Hit:", opt_hits[x], "Pop:", popTrace[x])
-		print("O-Cache", opt_cache_trace[x], "@", x+1, "Hit:", opt_hits[x+1], "Pop:", popTrace[x+1])
-		print()
 
 #Output Statistics
 print("Number of Errors:", diffs, ", Errors in %:", round((diffs/len(opt_hits))*100,4), ", Hit diff", abs(hhits-ohits))

@@ -39,7 +39,7 @@ def cacheHintHitUpdate(addr, cacheSet, ind):#Checked
 def hint(iTrace, hints, sets, associativity, progBar):
 	cache = initCache(sets, associativity)
 	hint_hits = []
-	hint_cache_trace = []
+	#hint_cache_trace = []
 	hits = 0
 	misses = 0
 	for x in range(len(iTrace)):
@@ -47,7 +47,7 @@ def hint(iTrace, hints, sets, associativity, progBar):
 			printProgressBar(x, len(iTrace)-1, prefix = 'Hint-Sim:', suffix = 'Complete', length = 50)
 		#Check the Set
 		cacheSetNr = iTrace[x] % len(cache)
-		hint_cache_trace.append(cache[0].copy())
+		#hint_cache_trace.append(cache[0].copy())
 		#check for hit
 		hit = isHit(cache[cacheSetNr], iTrace[x])
 		if hit == -1: #Miss
@@ -69,4 +69,4 @@ def hint(iTrace, hints, sets, associativity, progBar):
 	#END For Loop
 	if progBar:
 		print()
-	return hits, misses, hint_hits, hint_cache_trace
+	return hits, misses, hint_hits#, hint_cache_trace
