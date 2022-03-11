@@ -1,3 +1,4 @@
+from numba import jit
 import numpy as np
 
 from progressBar import printProgressBar
@@ -9,18 +10,21 @@ def initCache(sets, associativity):
 		cache[x] = np.array(np.zeros(associativity, dtype=int))
 	return cache
 
+@jit
 def isHit(cacheSet, addr):
 	for x in range(cacheSet.size):
 		if cacheSet[x] == addr:
 			return x
 	return -1
 
+@jit
 def cacheLRUMissUpdate(addr, cacheSet):#Checked
 	#LRU Update
 	for x in range(cacheSet.size-1, 0, -1):
 		cacheSet[x] = cacheSet[x-1]
 	cacheSet[0] = addr
 
+@jit
 def cacheLRUHitUpdate(addr, cacheSet):#Checked
 	found = False
 	for x in range(cacheSet.size-1, 0, -1):
@@ -28,7 +32,6 @@ def cacheLRUHitUpdate(addr, cacheSet):#Checked
 			found = True
 			cacheSet[x] = cacheSet[x-1]
 	cacheSet[0] = addr
-
 
 def lru(iTrace, sets, associativity, progBar):
 	cache = initCache(sets, associativity)

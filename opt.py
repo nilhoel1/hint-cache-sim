@@ -1,3 +1,4 @@
+from numba import jit
 import numpy as np
 from progressBar import printProgressBar
 
@@ -16,6 +17,7 @@ def initCache(sets, associativity):
 			cacheDist[x][y] = -1
 	return cache, cacheDist
 
+@jit
 def isHit(cacheSet, addr):
 	for x in range(cacheSet.size):
 		if cacheSet[x] == addr:
@@ -42,6 +44,7 @@ def distanceTraceStack(iTrace):
 	return distTrace
 
 #returns forward distance, -1 is infinity
+@jit
 def forwardDistance(iTrace, start, addr):
 	distance = 1
 	for x in range(start+1, len(iTrace), 1):
@@ -65,6 +68,7 @@ def highestForwardDistance(cacheDist, setNr):
 	return indMaxDist
 
 #Returns index of first found empty space, otherwise 0
+@jit
 def cacheHasEmptySpace(cacheSet):
 	for x in range(cacheSet.size):
 		if cacheSet[x] == 0:
@@ -81,6 +85,7 @@ def updateDistances(cacheDist):
 
 #Checks if the popped entry has the highest forward distance.
 #This is very compute intensive, as distances are recomputed to check.
+@jit
 def integrityCheck(cacheDist, cacheSetNr, pos, iTrace, cache, pop):
 	maxi = -1
 	for y in range(cacheDist[cacheSetNr].size):

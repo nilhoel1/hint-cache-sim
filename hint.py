@@ -1,3 +1,4 @@
+from numba import jit
 import numpy as np
 
 from progressBar import printProgressBar
@@ -31,6 +32,7 @@ def popToHint(popTrace, iTrace):
 	hints.reverse()
 	return(hints)
 
+@jit
 def cacheHintHitUpdate(addr, cacheSet, ind):#Checked
 	for x in range(ind,cacheSet.size-1):
 		cacheSet[x] = cacheSet[x+1]	
