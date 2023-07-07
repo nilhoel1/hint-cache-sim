@@ -1,4 +1,4 @@
-from numba import jit
+#from numba import jit
 import numpy as np
 from progressBar import printProgressBar
 
@@ -17,7 +17,7 @@ def initCache(sets, associativity):
 			cacheDist[x][y] = -1
 	return cache, cacheDist
 
-@jit
+#@jit
 def isHit(cacheSet, addr):
 	for x in range(cacheSet.size):
 		if cacheSet[x] == addr:
@@ -44,7 +44,7 @@ def distanceTraceStack(iTrace):
 	return distTrace
 
 #returns forward distance, -1 is infinity
-@jit
+#@jit
 def forwardDistance(iTrace, start, addr):
 	distance = 1
 	for x in range(start+1, len(iTrace), 1):
@@ -68,7 +68,7 @@ def highestForwardDistance(cacheDist, setNr):
 	return indMaxDist
 
 #Returns index of first found empty space, otherwise 0
-@jit
+#@jit
 def cacheHasEmptySpace(cacheSet):
 	for x in range(cacheSet.size):
 		if cacheSet[x] == 0:
@@ -85,7 +85,7 @@ def updateDistances(cacheDist):
 
 #Checks if the popped entry has the highest forward distance.
 #This is very compute intensive, as distances are recomputed to check.
-@jit
+#@jit
 def integrityCheck(cacheDist, cacheSetNr, pos, iTrace, cache, pop):
 	maxi = -1
 	for y in range(cacheDist[cacheSetNr].size):
@@ -117,7 +117,7 @@ def opt(iTrace, sets, associativity, progBar):
 		#opt_cache_trace.append(cache[0].copy())
 		#check for hit
 		hit = isHit(cache[cacheSetNr], iTrace[x])
-		if hit == -1: 
+		if hit == -1:
 			#Miss
 			misses += 1
 			opt_hits.append(0)
@@ -127,14 +127,14 @@ def opt(iTrace, sets, associativity, progBar):
 			fdAddr = forwardDistance(iTrace, x, iTrace[x])
 			#Always replace fdInd= -1 as it might be a empty cache entry
 			#When fdAddr is higher fdInd replace Ind, remember -1 = infty
-			if (((fdAddr < fdInd) or (fdInd == -1)) and (fdAddr != -1)): 
+			if (((fdAddr < fdInd) or (fdInd == -1)) and (fdAddr != -1)):
 				#replace highest distance entry wirt iTrace[x]
 				popTrace.append(cache[cacheSetNr][ind])
 				cache[cacheSetNr][ind] = iTrace[x]
 				cacheDist[cacheSetNr][ind] = fdAddr
 			else:
 				#Do nothing cache content has smaller distances
-				popTrace.append(iTrace[x]) 
+				popTrace.append(iTrace[x])
 		else:
 			#Hit
 			hits += 1
